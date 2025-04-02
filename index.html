@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Calculator</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --button-bg: #ecf0f1;
+            --button-hover: #bdc3c7;
+            --error-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .calculator {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .operations {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        button {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--button-bg);
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+        }
+
+        button.selected {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+        }
+
+        .calculate-btn:hover {
+            background-color: #2980b9;
+        }
+
+        #result {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .error {
+            color: var(--error-color);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        @media (max-width: 480px) {
+            .operations {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator" role="application" aria-label="Calculator">
+        <h1 id="calculator-title">Simple Calculator</h1>
+        
+        <div class="input-group">
+            <label for="num1">First Number</label>
+            <input type="number" id="num1" aria-label="Enter first number" 
+                   step="any" required aria-describedby="num1-help">
+            <div id="num1-help" class="visually-hidden">Enter the first number for your calculation</div>
+        </div>
+
+        <div class="input-group">
+            <label for="num2">Second Number</label>
+            <input type="number" id="num2" aria-label="Enter second number" 
+                   step="any" required aria-describedby="num2-help">
+            <div id="num2-help" class="visually-hidden">Enter the second number for your calculation</div>
+        </div>
+
+        <div class="operations" role="group" aria-labelledby="operations-title">
+            <h2 id="operations-title" class="visually-hidden">Mathematical Operations</h2>
+            <button type="button" class="operator" data-operation="add" 
+                    aria-label="Addition" aria-pressed="false">
+                <span aria-hidden="true">+</span>
+                <span class="visually-hidden">Addition</span>
+            </button>
+            <button type="button" class="operator" data-operation="subtract" 
+                    aria-label="Subtraction" aria-pressed="false">
+                <span aria-hidden="true">-</span>
+                <span class="visually-hidden">Subtraction</span>
+            </button>
+            <button type="button" class="operator" data-operation="multiply" 
+                    aria-label="Multiplication" aria-pressed="false">
+                <span aria-hidden="true">×</span>
+                <span class="visually-hidden">Multiplication</span>
+            </button>
+            <button type="button" class="operator" data-operation="divide" 
+                    aria-label="Division" aria-pressed="false">
+                <span aria-hidden="true">÷</span>
+                <span class="visually-hidden">Division</span>
+            </button>
+        </div>
+
+        <button class="calculate-btn" onclick="calculate()" 
+                aria-label="Calculate result">
+            Calculate
+            <span class="visually-hidden">Press to perform the selected operation on the entered numbers</span>
+        </button>
+
+        <div class="input-group">
+            <label for="result">Result</label>
+            <input type="text" id="result" readonly 
+                   aria-label="Calculation result" aria-live="polite"
+                   aria-atomic="true">
+        </div>
+
+        <div class="error" id="error" aria-live="assertive" role="alert"></div>
+    </div>
+
+    <script>
+        let selectedOperation = null;
+        const operators = document.querySelectorAll('.operator');
+        const errorElement = document.getElementById('error');
+        const resultElement = document.getElementById('result');
+
+        // Handle operation selection with enhanced accessibility
+        operators.forEach(button => {
+            button.addEventListener('click', () => {
+                selectOperation(button);
+            });
+            
+            // Add keyboard support for operation buttons
+            button.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectOperation(button);
+                }
+            });
+        });
+
+        function selectOperation(button) {
+            operators.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            button.classList.add('selected');
+            button.setAttribute('aria-pressed', 'true');
+            selectedOperation = button.dataset.operation;
+            errorElement.style.display = 'none';
+            
+            // Announce selection to screen readers
+            const operationName = button.getAttribute('aria-label');
+            const liveRegion = document.createElement('div');
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.className = 'visually-hidden';
+            liveRegion.textContent = `Selected operation: ${operationName}`;
+            document.body.appendChild(liveRegion);
+            setTimeout(() => document.body.removeChild(liveRegion), 100);
+        }
+
+        // Main calculation function with accessibility announcements
+        function calculate() {
+            errorElement.style.display = 'none';
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+
+            if (isNaN(num1) || isNaN(num2)) {
+                showError('Please enter valid numbers in both fields');
+                return;
+            }
+
+            if (!selectedOperation) {
+                showError('Please select an operation');
+                return;
+            }
+
+            let result;
+            let operationName = '';
+            try {
+                switch(selectedOperation) {
+                    case 'add':
+                        result = num1 + num2;
+                        operationName = 'addition';
+                        break;
+                    case 'subtract':
+                        result = num1 - num2;
+                        operationName = 'subtraction';
+                        break;
+                    case 'multiply':
+                        result = num1 * num2;
+                        operationName = 'multiplication';
+                        break;
+                    case 'divide':
+                        if (num2 === 0) throw new Error('Division by zero');
+                        result = num1 / num2;
+                        operationName = 'division';
+                        break;
+                }
+                resultElement.value = result.toLocaleString();
+                
+                // Announce result to screen readers
+                announceResult(`${num1} ${getOperationSymbol(selectedOperation)} ${num2} equals ${result}`);
+            } catch (error) {
+                showError(error.message === 'Division by zero' 
+                    ? 'Cannot divide by zero' 
+                    : 'Invalid calculation');
+            }
+        }
+
+        function getOperationSymbol(operation) {
+            switch(operation) {
+                case 'add': return '+';
+                case 'subtract': return '-';
+                case 'multiply': return '×';
+                case 'divide': return '÷';
+                default: return '';
+            }
+        }
+
+        function announceResult(message) {
+            const liveRegion = document.createElement('div');
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.className = 'visually-hidden';
+            liveRegion.textContent = message;
+            document.body.appendChild(liveRegion);
+            setTimeout(() => document.body.removeChild(liveRegion), 100);
+        }
+
+        // Error handling with accessibility
+        function showError(message) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            resultElement.value = '';
+            
+            // Announce error to screen readers
+            const liveRegion = document.createElement('div');
+            liveRegion.setAttribute('aria-live', 'assertive');
+            liveRegion.className = 'visually-hidden';
+            liveRegion.textContent = `Error: ${message}`;
+            document.body.appendChild(liveRegion);
+            setTimeout(() => document.body.removeChild(liveRegion), 100);
+        }
+
+        // Enhanced keyboard accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                calculate();
+            }
+            if (e.key === 'Escape') {
+                clearSelection();
+            }
+        });
+
+        function clearSelection() {
+            operators.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            selectedOperation = null;
+            
+            // Announce clearing to screen readers
+            announceResult('Operation selection cleared');
+        }
+
+        // Input validation with accessibility
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', () => {
+                input.setCustomValidity('');
+                errorElement.style.display = 'none';
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    calculate();
+                }
+            });
+        });
+
+        // Focus management for better keyboard navigation
+        document.getElementById('num1').addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && e.shiftKey) {
+                e.preventDefault();
+                document.querySelector('.calculate-btn').focus();
+            }
+        });
+
+        document.querySelector('.calculate-btn').addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('num1').focus();
+            }
+        });
+    </script>
+</body>
+</html>
