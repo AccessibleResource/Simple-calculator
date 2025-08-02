@@ -3,383 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accessible Calculator</title>
+    <title>AR Simple Calculator</title>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --button-bg: #ecf0f1;
-            --button-hover: #bdc3c7;
-            --error-color: #e74c3c;
-        }
-
+        /* --- General Styling & Resets --- */
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* --- Background and Main Layout --- */
         body {
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f8f9fa;
             padding: 20px;
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            color: #fff;
+            overflow-y: auto;
         }
 
-        .calculator {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        /* --- Calculator Card (Glassmorphism) --- */
+        .calculator-container {
             width: 100%;
-            max-width: 500px;
-        }
-
-        h1 {
-            color: var(--primary-color);
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             text-align: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
+        /* --- Typography --- */
+        .main-heading {
+            font-size: 2.2rem;
             margin-bottom: 0.5rem;
-            color: var(--primary-color);
-            font-weight: 500;
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(146, 141, 171, 0.5);
         }
 
-        input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+        .credit-section {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .description {
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            line-height: 1.5;
         }
 
-        input:focus {
+        /* --- Form Elements --- */
+        .calculator-form .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1rem;
             outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        .operations {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
-            margin: 1.5rem 0;
+        input[type="number"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        button {
-            padding: 0.8rem;
-            border: none;
-            border-radius: 5px;
-            background-color: var(--button-bg);
-            color: var(--primary-color);
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        input[type="number"]:focus,
+        select:focus {
+            border-color: rgba(146, 141, 171, 0.8);
+            box-shadow: 0 0 15px rgba(146, 141, 171, 0.5);
+        }
+        
+        /* Remove number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
         }
 
-        button:hover {
-            background-color: var(--button-hover);
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px;
+            padding-right: 40px; /* Make space for arrow */
+        }
+        
+        select option {
+            background: #2a2839;
+            color: #fff;
         }
 
-        button.selected {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-
+        /* --- Calculate Button --- */
         .calculate-btn {
             width: 100%;
-            background-color: var(--secondary-color);
-            color: white;
-            padding: 1rem;
-            font-size: 1.1rem;
-            margin: 1rem 0;
+            padding: 15px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(45deg, #da22ff, #9733ee);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            animation: glow-animation 3s infinite linear;
         }
 
         .calculate-btn:hover {
-            background-color: #2980b9;
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(218, 34, 255, 0.6), 0 0 40px rgba(151, 51, 238, 0.4);
+        }
+        
+        .calculate-btn:active {
+            transform: scale(0.98);
         }
 
-        #result {
-            width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            font-size: 1.1rem;
-            text-align: center;
+        /* --- Keyframes for Glowing Animation --- */
+        @keyframes glow-animation {
+            0% { box-shadow: 0 0 5px #da22ff; }
+            50% { box-shadow: 0 0 20px #9733ee; }
+            100% { box-shadow: 0 0 5px #da22ff; }
         }
 
-        .error {
-            color: var(--error-color);
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-
+        /* --- Responsive Design --- */
         @media (max-width: 480px) {
-            .operations {
-                grid-template-columns: repeat(2, 1fr);
+            .calculator-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .main-heading {
+                font-size: 1.8rem;
+            }
+
+            .description {
+                font-size: 0.9rem;
+            }
+
+            .credit-section {
+                font-size: 0.75rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="calculator" role="application" aria-label="Calculator">
-        <h1 id="calculator-title">Simple Calculator</h1>
-        
-        <div class="input-group">
-            <label for="num1">First Number</label>
-            <input type="number" id="num1" aria-label="Enter first number" 
-                   step="any" required aria-describedby="num1-help">
-            <div id="num1-help" class="visually-hidden">Enter the first number for your calculation</div>
-        </div>
 
-        <div class="input-group">
-            <label for="num2">Second Number</label>
-            <input type="number" id="num2" aria-label="Enter second number" 
-                   step="any" required aria-describedby="num2-help">
-            <div id="num2-help" class="visually-hidden">Enter the second number for your calculation</div>
-        </div>
+    <div class="calculator-container">
+        <h1 class="main-heading">AR Simple Calculator</h1>
+        <p class="credit-section">Developed by SM Ripon and Sujon Roy — Powered by Accessible Resource</p>
+        <p class="description">
+            A smart and responsive calculator that lets you perform any quick calculation with ease and instantly hear the result through voice feedback.
+        </p>
 
-        <div class="operations" role="group" aria-labelledby="operations-title">
-            <h2 id="operations-title" class="visually-hidden">Mathematical Operations</h2>
-            <button type="button" class="operator" data-operation="add" 
-                    aria-label="Addition" aria-pressed="false">
-                <span aria-hidden="true">+</span>
-                <span class="visually-hidden">Addition</span>
-            </button>
-            <button type="button" class="operator" data-operation="subtract" 
-                    aria-label="Subtraction" aria-pressed="false">
-                <span aria-hidden="true">-</span>
-                <span class="visually-hidden">Subtraction</span>
-            </button>
-            <button type="button" class="operator" data-operation="multiply" 
-                    aria-label="Multiplication" aria-pressed="false">
-                <span aria-hidden="true">×</span>
-                <span class="visually-hidden">Multiplication</span>
-            </button>
-            <button type="button" class="operator" data-operation="divide" 
-                    aria-label="Division" aria-pressed="false">
-                <span aria-hidden="true">÷</span>
-                <span class="visually-hidden">Division</span>
-            </button>
-        </div>
+        <form id="calculator-form" class="calculator-form">
+            <div class="input-group">
+                <input type="number" id="num1" placeholder="Enter first number" step="any" required>
+            </div>
+            
+            <div class="input-group">
+                <select id="operation">
+                    <option value="add">Addition (+)</option>
+                    <option value="subtract">Subtraction (-)</option>
+                    <option value="multiply">Multiplication (*)</option>
+                    <option value="divide">Division (/)</option>
+                    <option value="modulus">Modulus (%)</option>
+                    <option value="power">Power (^)</option>
+                    <option value="sqrt">Square Root (√)</option>
+                </select>
+            </div>
 
-        <button class="calculate-btn" onclick="calculate()" 
-                aria-label="Calculate result">
-            Calculate
-            <span class="visually-hidden">Press to perform the selected operation on the entered numbers</span>
-        </button>
+            <div class="input-group">
+                <input type="number" id="num2" placeholder="Enter second number" step="any" required>
+            </div>
 
-        <div class="input-group">
-            <label for="result">Result</label>
-            <input type="text" id="result" readonly 
-                   aria-label="Calculation result" aria-live="polite"
-                   aria-atomic="true">
-        </div>
-
-        <div class="error" id="error" aria-live="assertive" role="alert"></div>
+            <button type="submit" class="calculate-btn">Calculate</button>
+        </form>
     </div>
 
     <script>
-        let selectedOperation = null;
-        const operators = document.querySelectorAll('.operator');
-        const errorElement = document.getElementById('error');
-        const resultElement = document.getElementById('result');
+        document.addEventListener('DOMContentLoaded', () => {
+            const calculatorForm = document.getElementById('calculator-form');
+            const num1Input = document.getElementById('num1');
+            const num2Input = document.getElementById('num2');
+            const operationSelect = document.getElementById('operation');
 
-        // Handle operation selection with enhanced accessibility
-        operators.forEach(button => {
-            button.addEventListener('click', () => {
-                selectOperation(button);
-            });
-            
-            // Add keyboard support for operation buttons
-            button.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    selectOperation(button);
+            // Function to speak a given message
+            const speak = (message) => {
+                if ('speechSynthesis' in window) {
+                    // Stop any ongoing speech to prevent overlap
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(message);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    console.error("Speech Synthesis not supported in this browser.");
                 }
-            });
-        });
+            };
 
-        function selectOperation(button) {
-            operators.forEach(btn => {
-                btn.classList.remove('selected');
-                btn.setAttribute('aria-pressed', 'false');
-            });
-            button.classList.add('selected');
-            button.setAttribute('aria-pressed', 'true');
-            selectedOperation = button.dataset.operation;
-            errorElement.style.display = 'none';
+            // Toggle visibility of the second number input based on operation
+            const toggleSecondNumberInput = () => {
+                const selectedOperation = operationSelect.value;
+                if (selectedOperation === 'sqrt') {
+                    num2Input.style.display = 'none';
+                    // Clear value and remove requirement if hidden
+                    num2Input.value = ''; 
+                    num2Input.required = false;
+                } else {
+                    num2Input.style.display = 'block';
+                    num2Input.required = true;
+                }
+            };
             
-            // Announce selection to screen readers
-            const operationName = button.getAttribute('aria-label');
-            const liveRegion = document.createElement('div');
-            liveRegion.setAttribute('aria-live', 'polite');
-            liveRegion.className = 'visually-hidden';
-            liveRegion.textContent = `Selected operation: ${operationName}`;
-            document.body.appendChild(liveRegion);
-            setTimeout(() => document.body.removeChild(liveRegion), 100);
-        }
+            // Initial check on page load
+            toggleSecondNumberInput();
+            operationSelect.addEventListener('change', toggleSecondNumberInput);
 
-        // Main calculation function with accessibility announcements
-        function calculate() {
-            errorElement.style.display = 'none';
-            const num1 = parseFloat(document.getElementById('num1').value);
-            const num2 = parseFloat(document.getElementById('num2').value);
+            // Handle form submission for calculation
+            calculatorForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent page reload
 
-            if (isNaN(num1) || isNaN(num2)) {
-                showError('Please enter valid numbers in both fields');
-                return;
-            }
+                const operation = operationSelect.value;
+                const num1Value = num1Input.value;
+                const num2Value = num2Input.value;
+                
+                let num1, num2;
 
-            if (!selectedOperation) {
-                showError('Please select an operation');
-                return;
-            }
+                // --- Input Validation ---
+                if (num1Value.trim() === '') {
+                    speak("Please enter valid numbers.");
+                    return;
+                }
+                num1 = parseFloat(num1Value);
 
-            let result;
-            let operationName = '';
-            try {
-                switch(selectedOperation) {
+                if (isNaN(num1)) {
+                    speak("Please enter valid numbers.");
+                    return;
+                }
+
+                if (operation !== 'sqrt') {
+                    if (num2Value.trim() === '') {
+                        speak("Please enter valid numbers.");
+                        return;
+                    }
+                    num2 = parseFloat(num2Value);
+                    if (isNaN(num2)) {
+                        speak("Please enter valid numbers.");
+                        return;
+                    }
+                }
+                
+                let result;
+
+                // --- Perform Calculation ---
+                switch (operation) {
                     case 'add':
                         result = num1 + num2;
-                        operationName = 'addition';
                         break;
                     case 'subtract':
                         result = num1 - num2;
-                        operationName = 'subtraction';
                         break;
                     case 'multiply':
                         result = num1 * num2;
-                        operationName = 'multiplication';
                         break;
                     case 'divide':
-                        if (num2 === 0) throw new Error('Division by zero');
+                        if (num2 === 0) {
+                            speak("Cannot divide by zero.");
+                            return;
+                        }
                         result = num1 / num2;
-                        operationName = 'division';
                         break;
+                    case 'modulus':
+                         if (num2 === 0) {
+                            speak("Cannot perform modulus by zero.");
+                            return;
+                        }
+                        result = num1 % num2;
+                        break;
+                    case 'power':
+                        result = Math.pow(num1, num2);
+                        break;
+                    case 'sqrt':
+                         if (num1 < 0) {
+                            speak("Cannot calculate the square root of a negative number.");
+                            return;
+                        }
+                        result = Math.sqrt(num1);
+                        break;
+                    default:
+                        speak("Invalid operation.");
+                        return;
                 }
-                resultElement.value = result.toLocaleString();
-                
-                // Announce result to screen readers
-                announceResult(`${num1} ${getOperationSymbol(selectedOperation)} ${num2} equals ${result}`);
-            } catch (error) {
-                showError(error.message === 'Division by zero' 
-                    ? 'Cannot divide by zero' 
-                    : 'Invalid calculation');
-            }
-        }
 
-        function getOperationSymbol(operation) {
-            switch(operation) {
-                case 'add': return '+';
-                case 'subtract': return '-';
-                case 'multiply': return '×';
-                case 'divide': return '÷';
-                default: return '';
-            }
-        }
-
-        function announceResult(message) {
-            const liveRegion = document.createElement('div');
-            liveRegion.setAttribute('aria-live', 'polite');
-            liveRegion.className = 'visually-hidden';
-            liveRegion.textContent = message;
-            document.body.appendChild(liveRegion);
-            setTimeout(() => document.body.removeChild(liveRegion), 100);
-        }
-
-        // Error handling with accessibility
-        function showError(message) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-            resultElement.value = '';
-            
-            // Announce error to screen readers
-            const liveRegion = document.createElement('div');
-            liveRegion.setAttribute('aria-live', 'assertive');
-            liveRegion.className = 'visually-hidden';
-            liveRegion.textContent = `Error: ${message}`;
-            document.body.appendChild(liveRegion);
-            setTimeout(() => document.body.removeChild(liveRegion), 100);
-        }
-
-        // Enhanced keyboard accessibility
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                calculate();
-            }
-            if (e.key === 'Escape') {
-                clearSelection();
-            }
-        });
-
-        function clearSelection() {
-            operators.forEach(btn => {
-                btn.classList.remove('selected');
-                btn.setAttribute('aria-pressed', 'false');
-            });
-            selectedOperation = null;
-            
-            // Announce clearing to screen readers
-            announceResult('Operation selection cleared');
-        }
-
-        // Input validation with accessibility
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('input', () => {
-                input.setCustomValidity('');
-                errorElement.style.display = 'none';
-            });
-            
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    calculate();
+                // Format result to have fewer decimal places if it's a float
+                if (!Number.isInteger(result)) {
+                    result = parseFloat(result.toFixed(4));
                 }
+
+                // --- Announce the result ---
+                speak(`Result: ${result}`);
             });
-        });
-
-        // Focus management for better keyboard navigation
-        document.getElementById('num1').addEventListener('keydown', (e) => {
-            if (e.key === 'Tab' && e.shiftKey) {
-                e.preventDefault();
-                document.querySelector('.calculate-btn').focus();
-            }
-        });
-
-        document.querySelector('.calculate-btn').addEventListener('keydown', (e) => {
-            if (e.key === 'Tab' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('num1').focus();
-            }
         });
     </script>
+
 </body>
 </html>
